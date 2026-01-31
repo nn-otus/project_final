@@ -1,0 +1,26 @@
+---
+- name: Apply common configuration to all nodes
+  hosts: all
+  become: yes
+  roles:
+    - common
+    - network
+
+- name: Configure High Availability Routers
+  hosts: routers
+  become: yes
+  roles:
+    - router
+
+- name: Configure Balancers
+  hosts: balancers
+  become: yes
+  roles:
+    - balancer
+
+- name: Configure Frontends
+  hosts: frontends
+  become: yes
+  roles:
+    - frontend
+

@@ -1,0 +1,6 @@
+---
+- name: restart networkd
+  shell: "ifup enp2s0 enp8s0 enp9s0 --force || true"
+
+- name: save iptables
+  shell: "iptables-save > /etc/iptables/rules.v4"

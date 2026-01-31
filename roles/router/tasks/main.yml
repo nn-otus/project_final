@@ -1,0 +1,39 @@
+---
+- name: Install keepalived
+  apt:
+    name: keepalived
+    state: present
+
+- name: Configure keepalived
+  template:
+    src: keepalived.conf.j2
+    dest: /etc/keepalived/keepalived.conf
+  notify: Restart keepalived
+
+- name: Ensure keepalived is started
+  service:
+    name: keepalived
+    state: started
+    enabled: yes
+
+- name: DNAT HTTP (80) to Balancer VIP # Настраиваем port-forwarding
+  iptables:
+    table: nat
+    chain: PREROUTING
+    protocol: tcp
+    destination_port: 80
+    jump: DNAT
+    to_destination: 10.0.10.100:80
+  when: "'routers' in group_names"
+  notify: save iptables
+
+- name: DNAT HTTPS (443) to Balancer VIP
+  iptables:
+    table: nat
+    chain: PREROUTING
+    protocol: tcp
+    destination_port: 443
+    jump: DNAT
+    to_destination: 10.0.10.100:443
+  when: "'routers' in group_names"
+  notify: save iptables

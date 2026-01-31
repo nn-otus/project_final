@@ -1,0 +1,8 @@
+---
+- name: save iptables
+  shell: "iptables-save > /etc/iptables/rules.v4"
+
+- name: restart keepalived
+  service:
+    name: keepalived
+    state: restarted

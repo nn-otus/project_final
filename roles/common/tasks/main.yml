@@ -1,0 +1,42 @@
+---
+- name: Update apt cache and upgrade system
+  apt:
+    update_cache: yes
+    upgrade: dist
+    cache_valid_time: 3600
+
+- name: Install essential packages
+  apt:
+    name:
+      - curl
+      - wget
+      - vim
+      - htop
+      - net-tools
+      - dnsutils
+      - traceroute
+      - sudo
+      - ifupdown
+      - iptables
+    state: present
+    update_cache: yes
+  environment:
+    DEBIAN_FRONTEND: noninteractive  # Это чтобы не было интерактивного запроса «Сохранить текущие правила IPv4?»
+
+
+- name: Set timezone to Europe/Moscow
+  timezone:
+    name: Europe/Moscow
+
+- name: Ensure guest agent is running (for libvirt)
+  service:
+    name: qemu-guest-agent
+    state: started
+    enabled: yes
+
+- name: Setup passwordless sudo for ansible user
+  copy:
+    content: "ansible ALL=(ALL) NOPASSWD:ALL"
+    dest: /etc/sudoers.d/ansible
+    mode: '0440'
+    validate: '/usr/sbin/visudo -cf %s'

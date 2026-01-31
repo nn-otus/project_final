@@ -1,0 +1,52 @@
+---
+- name: Ensure interfaces.d directory exists
+  file:
+    path: /etc/network/interfaces.d
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Ensure interfaces.d is sourced in main interfaces file
+  lineinfile:
+    path: /etc/network/interfaces
+    line: "source /etc/network/interfaces.d/*"
+    create: yes
+    state: present
+    
+- name: Configure networking for standard nodes
+  template:
+    src: internal.j2
+    dest: /etc/network/interfaces.d/internal
+  when: "'routers' not in group_names"
+  notify: Restart networking
+
+- name: Configure networking for routers
+  template:
+    src: routers_interfaces.j2
+    dest: /etc/network/interfaces.d/internal
+  when: "'routers' in group_names"
+  notify: Restart networking
+
+- name: Enable IP Forwarding on routers
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: '1'
+    state: present
+    reload: yes
+  when: "'routers' in group_names"
+
+- name: Install iptables-persistent
+  apt:
+    name: iptables-persistent
+    state: present
+  when: "'routers' in group_names"
+
+- name: Setup NAT (Masquerade) on routers
+  iptables:
+    table: nat
+    chain: POSTROUTING
+    out_interface: enp1s0
+    jump: MASQUERADE
+  when: "'routers' in group_names"
+  notify: Save iptables

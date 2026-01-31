@@ -1,0 +1,44 @@
+#cloud-config
+package_update: true
+users:
+  - name: ansible
+    groups: sudo
+    shell: /bin/bash
+    sudo: 'ALL=(ALL) NOPASSWD:ALL'
+    passwd: "$6$QqtLsZVZJZiUWy.E$QLUnij4BHYuNCKcBe2cpKh.FaXG7n3G/4fNixQH13AdgE6g2T.eGvc2yWnYNEnhfQRttIrdPgEMR/CYn0h5yh."
+    ssh_authorized_keys:
+      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKrZ46WpbPEJhzVHQdgb+WbznTtc36UC/J6sWxo7kPcf lab-manager
+
+# Разрешаем вход по паролю для консоли
+ssh_pwauth: true
+
+# Используем стандартный формат для Debian Cloud
+write_files:
+  - path: /etc/network/interfaces.d/enp1s0
+    content: |
+      auto enp1s0
+      iface enp1s0 inet static
+        address 10.0.10.21
+        netmask 255.255.255.0
+        gateway 10.0.10.1
+        dns-nameservers 8.8.8.8 1.1.1.1
+
+# Принудительно поднимаем интерфейс в конце загрузки
+runcmd:
+  - ifup enp1s0
+
+
+# В таком формате сеть не поднимается
+# network:
+#   version: 2
+#   ethernets:
+#     config_all:
+#       match:
+#         name: "enp*"
+#       addresses:
+#         - 10.0.10.21/24
+#       routes:
+#         - to: default
+#           via: 10.0.10.1
+#       nameservers:
+#         addresses:

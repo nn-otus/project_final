@@ -1,0 +1,71 @@
+---
+- name: Configure Router-1
+  hosts: routers
+  become: yes
+  tasks:
+    - name: Enable IPv4 forwarding
+      sysctl:
+        name: net.ipv4.ip_forward
+        value: '1'
+        state: present
+        reload: yes
+
+    - name: Ensure interfaces.d directory exists
+      file:
+        path: /etc/network/interfaces.d
+        state: directory
+        mode: '0755'
+
+    - name: Create basic interfaces file if missing
+      copy:
+        dest: /etc/network/interfaces
+        content: |
+          # This file describes the network interfaces available on your system
+          # and how to activate them. For more information, see interfaces(5).
+
+          source /etc/network/interfaces.d/*
+
+          # The loopback network interface
+          auto lo
+          iface lo inet loopback
+        force: no  # Создаст только если файла НЕТ
+
+    - name: Configure second network interface (front-net)
+      copy:
+        dest: /etc/network/interfaces.d/enp7s0
+        content: |
+          auto enp7s0
+          iface enp7s0 inet static
+              address 10.0.10.1
+              netmask 255.255.255.0
+
+    - name: Bring up enp7s0
+      shell: ifup enp7s0
+    
+    - name: Install networking tools
+      apt:
+        name: ifupdown
+        state: present
+
+    - name: Bring up enp2s0
+      shell: ifup enp2s0
+      register: ifup_result
+      failed_when: false
+
+    - name: Install iptables-persistent
+      apt:
+        name: iptables-persistent
+        state: present
+        update_cache: yes
+      environment:
+        DEBIAN_FRONTEND: noninteractive
+
+    - name: Setup NAT (MASQUERADE)
+      iptables:
+        table: nat
+        chain: POSTROUTING
+        out_interface: enp1s0
+        jump: MASQUERADE
+
+    - name: Save iptables rules
+      shell: iptables-save > /etc/iptables/rules.v4

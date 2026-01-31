@@ -1,0 +1,27 @@
+#cloud-config
+# Обновление системы при первом запуске
+package_update: true
+
+# Создание пользователя для Ansible
+users:
+  - name: ansible
+    groups: sudo
+    shell: /bin/bash
+    sudo: 'ALL=(ALL) NOPASSWD:ALL'
+    # Вставьте ВАШ публичный ключ ниже
+    ssh_authorized_keys:
+      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKrZ46WpbPEJhzVHQdgb+WbznTtc36UC/J6sWxo7kPcf lab-manager
+
+# Установка необходимых пакетов
+packages:
+  - qemu-guest-agent
+  - python3
+  - curl
+  - git
+
+# Настройка часового пояса
+timezone: Europe/Moscow
+
+# Финальное сообщение в логах
+final_message: "The system is finally up, after $UPTIME seconds"
+

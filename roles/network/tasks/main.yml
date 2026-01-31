@@ -1,0 +1,62 @@
+---
+- name: Enable IP Forwarding on routers
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: '1'
+    state: present
+    reload: yes
+  when: "'routers' in group_names"
+
+- name: Configure Router Interfaces (systemd-networkd)
+  copy:
+    dest: "/etc/systemd/network/{{ item.file }}"
+    content: |
+      [Match]
+      Name={{ item.iface }}
+      [Network]
+      Address={{ item.addr }}/24
+  loop:
+    - { file: '10-front.network', iface: 'enp2s0', addr: "10.0.10.{{ router_id }}" }
+    - { file: '20-back.network',  iface: 'enp8s0', addr: "10.0.20.{{ router_id }}" }
+    - { file: '30-db.network',    iface: 'enp9s0', addr: "10.0.30.{{ router_id }}" }
+  when: "'routers' in group_names"
+  notify: restart networkd
+
+- name: Flush handlers to apply network settings immediately
+  meta: flush_handlers
+
+- name: Configure Standard Nodes (front/back/db)
+  template:
+    src: internal.j2
+    dest: /etc/network/interfaces.d/internal
+  when: int_ip is defined and 'routers' not in group_names
+  notify: restart networkd
+
+- name: Flush handlers to ensure directory and sourcing are ready
+  meta: flush_handlers
+
+- name: Force all internal interfaces UP
+  shell: "ifup {{ item }} || true"
+  loop:
+    - enp2s0 # Для всех стандартных машин
+    - enp8s0 # Для роутеров (APP)
+    - enp9s0 # Для роутеров (DB)
+  # Эта задача сработает для любого хоста, если интерфейс описан в interfaces.d
+
+
+- name: Install iptables-persistent on routers
+  apt:
+    name: iptables-persistent
+    state: present
+  environment:
+    DEBIAN_FRONTEND: noninteractive
+  when: "'routers' in group_names"
+
+- name: Setup NAT on routers
+  iptables:
+    table: nat
+    chain: POSTROUTING
+    out_interface: enp1s0
+    jump: MASQUERADE
+  when: "'routers' in group_names"
+  notify: save iptables

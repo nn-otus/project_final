@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Otus-Lab Frontend</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; margin-top: 50px; }
+        .info { color: #555; font-size: 1.2em; }
+    </style>
+</head>
+<body>
+    <h1>Welcome to ToDo App!</h1>
+    <div class="info">
+        <p>Served by node: <strong>{{ inventory_hostname }}</strong></p>
+        <p>Internal IP: {{ int_ip }}</p>
+    </div>
+</body>
+</html>

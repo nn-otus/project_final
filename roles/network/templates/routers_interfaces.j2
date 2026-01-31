@@ -1,0 +1,14 @@
+auto enp2s0
+iface enp2s0 inet static
+    address {{ dmz_ip }}
+    netmask 255.255.255.0
+
+auto enp8s0
+iface enp8s0 inet static
+    address {{ app_ip }}
+    netmask 255.255.255.0
+
+auto enp9s0
+iface enp9s0 inet static
+    address {{ db_ip }}
+    netmask 255.255.255.0

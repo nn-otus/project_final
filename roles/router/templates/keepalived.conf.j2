@@ -1,0 +1,48 @@
+global_defs {
+    router_id ROUTER_{{ router_id }}
+}
+
+vrrp_instance VI_DMZ {
+    state {{ 'MASTER' if keepalived_priority == 100 else 'BACKUP' }}
+    interface enp2s0
+    virtual_router_id 10
+    priority {{ keepalived_priority }}
+    advert_int 1
+    authentication {
+        auth_type PASS
+        auth_pass secret123
+    }
+    virtual_ipaddress {
+        {{ vip_dmz }}/24
+    }
+}
+
+vrrp_instance VI_APP {
+    state {{ 'MASTER' if keepalived_priority == 100 else 'BACKUP' }}
+    interface enp8s0
+    virtual_router_id 20
+    priority {{ keepalived_priority }}
+    advert_int 1
+    authentication {
+        auth_type PASS
+        auth_pass secret123
+    }
+    virtual_ipaddress {
+        {{ vip_app }}/24
+    }
+}
+
+vrrp_instance VI_DB {
+    state {{ 'MASTER' if keepalived_priority == 100 else 'BACKUP' }}
+    interface enp9s0
+    virtual_router_id 30
+    priority {{ keepalived_priority }}
+    advert_int 1
+    authentication {
+        auth_type PASS
+        auth_pass secret123
+    }
+    virtual_ipaddress {
+        {{ vip_db }}/24
+    }
+}

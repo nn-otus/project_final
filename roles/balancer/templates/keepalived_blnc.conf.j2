@@ -1,0 +1,14 @@
+vrrp_instance VI_BLNC {
+    state {{ 'MASTER' if inventory_hostname == 'blnc-1' else 'BACKUP' }}
+    interface enp2s0
+    virtual_router_id 50
+    priority {{ 100 if inventory_hostname == 'blnc-1' else 50 }}
+    advert_int 1
+    authentication {
+        auth_type PASS
+        auth_pass blnc_secret
+    }
+    virtual_ipaddress {
+        10.0.10.100/24
+    }
+}

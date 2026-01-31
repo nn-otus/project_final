@@ -1,0 +1,72 @@
+---
+- name: Install nginx and keepalived
+  apt:
+    name: 
+      - nginx
+      - keepalived
+    state: present
+    update_cache: yes
+
+- name: Create SSL directory
+  file:
+    path: /etc/nginx/ssl
+    state: directory
+    owner: root
+    group: root
+    mode: '0700'
+
+# - name: Copy SSL certificates # Эти сертификаты остались на старом компе, надо делать новые. Пока - самоподписанные
+#   copy:
+#     src: "{{ item }}"
+#     dest: "/etc/nginx/ssl/{{ item }}"
+#     owner: root
+#     group: root
+#     mode: '0600'
+#   loop:
+#     - fullchain.pem
+#     - privkey.pem
+#   notify: reload nginx
+
+- name: Generate self-signed SSL certificate # Делаем самоподписанный сертификат
+  command: >
+    openssl req -x509 -nodes -days 365 -newkey rsa:2048
+    -keyout /etc/nginx/ssl/privkey.pem
+    -out /etc/nginx/ssl/fullchain.pem
+    -subj "/C=RU/ST=Moscow/L=Moscow/O=Otus/CN=otus-lab.ru"
+  args:
+    creates: /etc/nginx/ssl/fullchain.pem
+  notify: reload nginx
+
+
+- name: Configure Nginx balancer (HTTP/HTTPS)
+  template:
+    src: nginx_blnc.conf.j2
+    dest: /etc/nginx/sites-available/balancer
+  notify: reload nginx
+
+- name: Enable balancer config
+  file:
+    src: /etc/nginx/sites-available/balancer
+    dest: /etc/nginx/sites-enabled/balancer
+    state: link
+
+- name: Remove default nginx site
+  file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify: reload nginx
+
+- name: Configure Keepalived for Balancer VIP
+  template:
+    src: keepalived_blnc.conf.j2
+    dest: /etc/keepalived/keepalived.conf
+  notify: restart keepalived
+
+- name: Ensure services are started and enabled
+  service:
+    name: "{{ item }}"
+    state: started
+    enabled: yes
+  loop:
+    - nginx
+    - keepalived
