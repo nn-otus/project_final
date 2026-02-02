@@ -8,9 +8,17 @@ users:
     groups: sudo
     shell: /bin/bash
     sudo: 'ALL=(ALL) NOPASSWD:ALL'
-    # Вставьте ВАШ публичный ключ ниже
+    # Пароль можно записывать в открытом виде (cloud-init сам его хеширует)
+    password: "ansible" 
+    lock_passwd: false
+    # Ниже публичный ключ, с которым ansible будет подключаться к VM
     ssh_authorized_keys:
       - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKrZ46WpbPEJhzVHQdgb+WbznTtc36UC/J6sWxo7kPcf lab-manager
+
+chpasswd:
+  list: |
+     ansible:ansible
+  expire: False
 
 # Установка необходимых пакетов
 packages:

@@ -1,0 +1,28 @@
+<network>
+  <name>default</name>
+  <uuid>f5213ae6-0ed0-436d-99a5-5e70d28cc793</uuid>
+  <forward mode='nat'>
+    <nat>
+      <port start='1024' end='65535'/>
+    </nat>
+  </forward>
+  <bridge name='virbr0' stp='on' delay='0'/>
+  <mac address='52:54:00:cf:29:38'/>
+  <ip address='192.168.122.1' netmask='255.255.255.0'>
+<dhcp>
+  <range start='192.168.122.100' end='192.168.122.250'/>
+  <host mac='52:54:00:00:00:fb' name='router-1' ip='192.168.122.251'/>
+  <host mac='52:54:00:00:00:fc' name='router-2' ip='192.168.122.252'/>
+  <host mac='52:54:00:00:00:11' name='blnc-1' ip='192.168.122.11'/>
+  <host mac='52:54:00:00:00:12' name='blnc-2' ip='192.168.122.12'/>
+  <host mac='52:54:00:00:00:21' name='front-1' ip='192.168.122.21'/>
+  <host mac='52:54:00:00:00:22' name='front-2' ip='192.168.122.22'/>
+  <host mac='52:54:00:00:00:31' name='back-1' ip='192.168.122.31'/>
+  <host mac='52:54:00:00:00:32' name='back-2' ip='192.168.122.32'/>
+  <host mac='52:54:00:00:00:41' name='db-1' ip='192.168.122.41'/>
+  <host mac='52:54:00:00:00:42' name='db-2' ip='192.168.122.42'/>
+  <host mac='52:54:00:00:00:51' name='mon-1' ip='192.168.122.51'/>
+</dhcp>
+  </ip>
+</network>
+
