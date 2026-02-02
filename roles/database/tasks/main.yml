@@ -1,0 +1,115 @@
+---
+- name: Install PostgreSQL 15
+  apt:
+    name: 
+      - postgresql-15
+      - python3-psycopg2  # Нужно для модулей Ansible
+    state: present
+    update_cache: yes
+  become: yes
+
+- name: Configure PostgreSQL to listen on all interfaces
+  lineinfile:
+    path: /etc/postgresql/15/main/postgresql.conf
+    regexp: "^#?listen_addresses ="
+    line: "listen_addresses = '*'"
+  become: yes
+  notify: restart postgresql
+
+- name: Allow replication from db-net
+  blockinfile:
+    path: /etc/postgresql/15/main/pg_hba.conf
+    block: |
+      host    all             all             10.0.30.0/24            md5
+      host    replication     replication     10.0.30.0/24            md5
+  notify: restart postgresql
+
+- name: Flush handlers to apply config before replication setup
+  meta: flush_handlers
+
+- name: MASTER - Create replication user
+  become_user: postgres
+  postgresql_user:
+    name: replication
+    password: "repl_password"
+    role_attr_flags: REPLICATION
+  when: db_mode == 'master'
+
+- name: MASTER - Create application database
+  become_user: postgres
+  postgresql_db:
+    name: todo_db
+    state: present
+  when: db_mode == 'master'
+
+- name: MASTER - Create application user
+  become_user: postgres
+  postgresql_user:
+    db: todo_db
+    name: todo_user
+    password: "todo_password"
+    priv: "ALL"
+  when: db_mode == 'master'
+
+# Логика для Slave
+- name: SLAVE - Check if replica is already initialized
+  stat:
+    path: /var/lib/postgresql/15/main/standby.signal
+  register: replica_initialized
+  when: db_mode == 'slave'
+
+# - name: SLAVE - Stop and clean data dir, then clone master # Зависает, ждет ввода пароля
+#   shell: |
+#     systemctl stop postgresql
+#     rm -rf /var/lib/postgresql/15/main/*
+#     sudo -u postgres pg_basebackup -h 10.0.30.11 -D /var/lib/postgresql/15/main/ -U replication -P -R --wal-method=stream
+#     touch /var/lib/postgresql/15/main/standby.signal
+#     systemctl start postgresql
+#   environment:
+#     PGPASSWORD: "repl_password"
+#   when: db_mode == 'slave' and not replica_initialized.stat.exists
+
+- name: SLAVE - Stop and clean data dir, then clone master
+  shell: |
+    systemctl stop postgresql
+    rm -rf /var/lib/postgresql/15/main/*
+    PGPASSWORD="{{ repl_password | default('repl_password') }}" pg_basebackup -h 10.0.30.11 -D /var/lib/postgresql/15/main/ -U replication -P -R --wal-method=stream
+    chown -R postgres:postgres /var/lib/postgresql/15/main/
+    systemctl start postgresql
+  become: yes
+  when: db_mode == 'slave' and not replica_initialized.stat.exists
+
+- name: Add replication settings to postgresql.conf
+  blockinfile:
+    path: /etc/postgresql/15/main/postgresql.conf
+    insertafter: EOF
+    block: |
+      # HA Project Settings
+      listen_addresses = '*'
+      wal_level = replica
+      max_wal_senders = 10
+      hot_standby = on
+      archive_mode = on
+      archive_command = 'test ! -f /mnt/backups/archive/%f && cp %p /mnt/backups/archive/%f'
+  notify: restart postgresql
+
+- name: Flush handlers to restart Master
+  meta: flush_handlers
+
+- name: Install NFS client
+  apt:
+    name: nfs-common
+    state: present
+
+- name: Create mount point for backups
+  file:
+    path: /mnt/backups
+    state: directory
+
+- name: Mount NFS backup volume
+  mount:
+    path: /mnt/backups
+    src: "10.0.20.100:/srv/backups/postgres" # IP mon-1
+    fstype: nfs
+    state: mounted
+

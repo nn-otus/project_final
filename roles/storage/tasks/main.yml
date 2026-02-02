@@ -1,0 +1,28 @@
+---
+- name: Install NFS server
+  apt:
+    name: nfs-kernel-server
+    state: present
+
+- name: Create backup directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: nobody
+    group: nogroup
+    mode: '0777'
+  loop:
+    - /srv/backups/postgres
+    - /srv/backups/postgres/archive
+
+- name: Configure NFS export
+  lineinfile:
+    path: /etc/exports
+    line: "/srv/backups/postgres 10.0.30.0/24(rw,sync,no_subtree_check,no_root_squash)"
+  notify: reload nfs
+
+- name: Ensure NFS is running
+  service:
+    name: nfs-kernel-server
+    state: started
+    enabled: yes

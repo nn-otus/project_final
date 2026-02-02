@@ -1,0 +1,5 @@
+#!/bin/bash
+DATE=$(date +%Y%m%d_%H%M%S)
+pg_dump -U postgres todo_db > /mnt/backups/todo_db_$DATE.sql
+# Удаляем бэкапы старше 7 дней
+find /mnt/backups -name "*.sql" -mtime +7 -delete

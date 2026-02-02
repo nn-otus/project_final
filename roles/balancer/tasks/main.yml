@@ -15,27 +15,31 @@
     group: root
     mode: '0700'
 
-# - name: Copy SSL certificates # Эти сертификаты остались на старом компе, надо делать новые. Пока - самоподписанные
-#   copy:
-#     src: "{{ item }}"
-#     dest: "/etc/nginx/ssl/{{ item }}"
-#     owner: root
-#     group: root
-#     mode: '0600'
-#   loop:
-#     - fullchain.pem
-#     - privkey.pem
-#   notify: reload nginx
+- name: Debug point
+  debug:
+    msg: "I am running this task now!"
 
-- name: Generate self-signed SSL certificate # Делаем самоподписанный сертификат
-  command: >
-    openssl req -x509 -nodes -days 365 -newkey rsa:2048
-    -keyout /etc/nginx/ssl/privkey.pem
-    -out /etc/nginx/ssl/fullchain.pem
-    -subj "/C=RU/ST=Moscow/L=Moscow/O=Otus/CN=otus-lab.ru"
-  args:
-    creates: /etc/nginx/ssl/fullchain.pem
+- name: Copy real Let's Encrypt certificates # Эти сертификаты остались на старом компе, надо делать новые. Пока - самоподписанные
+  copy:
+    src: "{{ item }}"
+    dest: "/etc/nginx/ssl/{{ item }}"
+    owner: root
+    group: root
+    mode: '0600'
+  loop:
+    - fullchain.pem
+    - privkey.pem
   notify: reload nginx
+
+# - name: Generate self-signed SSL certificate # Делаем самоподписанный сертификат
+#   command: >
+#     openssl req -x509 -nodes -days 365 -newkey rsa:2048
+#     -keyout /etc/nginx/ssl/privkey.pem
+#     -out /etc/nginx/ssl/fullchain.pem
+#     -subj "/C=RU/ST=Moscow/L=Moscow/O=Otus/CN=otus-lab.ru"
+#   args:
+#     creates: /etc/nginx/ssl/fullchain.pem
+#   notify: reload nginx
 
 
 - name: Configure Nginx balancer (HTTP/HTTPS)

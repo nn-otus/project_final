@@ -12,11 +12,17 @@
   roles:
     - router
 
+- name: Configure Storage and Monitoring
+  hosts: monitoring
+  become: yes
+  roles:
+    - storage
+
 - name: Configure Balancers
   hosts: balancers
   become: yes
   roles:
-    - balancer
+    - { role: balancer, tags: 'balanser' }
 
 - name: Configure Frontends
   hosts: frontends
@@ -24,3 +30,9 @@
   roles:
     - frontend
 
+- name: Configure Databases
+  hosts: databases
+  become: yes  # Установка требует прав рута. Указываю здесь, чтобы не писать в каждой задаче. Надо тестить.
+  roles:
+    - database
+    

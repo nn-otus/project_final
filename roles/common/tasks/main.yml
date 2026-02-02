@@ -40,3 +40,18 @@
     dest: /etc/sudoers.d/ansible
     mode: '0440'
     validate: '/usr/sbin/visudo -cf %s'
+
+- name: Install ACL package
+  apt:
+    name: acl
+    state: present
+
+- name: Set system hostname
+  hostname:
+    name: "{{ inventory_hostname }}"
+
+- name: Configure /etc/hosts for FQDN
+  template:
+    src: hosts.j2
+    dest: /etc/hosts
+    
