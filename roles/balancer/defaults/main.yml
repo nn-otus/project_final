@@ -1,0 +1,22 @@
+---
+# === Nginx Settings ===
+nginx_upstream_name: "frontend_nodes"
+nginx_server_name: "otus-lab.ru"
+nginx_frontend_nodes:
+  - { address: "10.0.10.21", port: 80 }
+  - { address: "10.0.10.22", port: 80 }
+
+# === Keepalived Settings ===
+keepalived_master_node: "blnc-1"
+keepalived_vip: "10.0.10.100/24"
+keepalived_auth_pass: "blnc_secret"
+keepalived_interface: "enp2s0"
+
+# VRRP conf
+keepalived_router_id: 50
+keepalived_vip: "10.0.10.100/24"
+keepalived_auth_pass: "blnc_secret"
+
+# Priority
+keepalived_priority_master: 100
+keepalived_priority_backup: 50

@@ -1,0 +1,93 @@
+.
+├── Old
+│   ├── create_front.sh
+│   ├── create_router.sh
+│   └── user-data-front.yml
+├── README.md
+├── ansible.cfg
+├── back-net.xml
+├── config
+├── create_all_vms.sh
+├── create_all_vms.sh.bak_1st
+├── db-net.xml
+├── default_net.xml
+├── delete_all_vms.sh
+├── dhcp_reserv_set.sh
+├── front-net.xml
+├── get_all_vm_ip.sh
+├── inventory
+│   ├── group_vars
+│   │   ├── backends.yml
+│   │   ├── balancers.yml
+│   │   ├── databases.yml
+│   │   ├── frontends.yml
+│   │   ├── main.yml
+│   │   ├── monitoring.yml
+│   │   └── routers.yml
+│   └── hosts.ini
+├── project_structure.txt
+├── roles
+│   ├── balancer
+│   │   ├── defaults
+│   │   │   └── main.yml
+│   │   ├── files
+│   │   │   ├── fullchain.pem
+│   │   │   └── privkey.pem
+│   │   ├── handlers
+│   │   │   └── main.yml
+│   │   ├── tasks
+│   │   │   └── main.yml
+│   │   └── templates
+│   │       ├── keepalived_blnc.conf.j2
+│   │       ├── nginx_blnc.conf.j2
+│   │       └── nginx_blnc.conf.j2.bak
+│   ├── common
+│   │   ├── handlers
+│   │   │   └── main.yml
+│   │   ├── tasks
+│   │   │   └── main.yml
+│   │   └── templates
+│   │       └── hosts.j2
+│   ├── database
+│   │   ├── handlers
+│   │   │   └── main.yml
+│   │   ├── tasks
+│   │   │   └── main.yml
+│   │   └── templates
+│   │       └── backup.sh.j2
+│   ├── frontend
+│   │   ├── tasks
+│   │   │   └── main.yml
+│   │   └── templates
+│   │       └── index.html.j2
+│   ├── network
+│   │   ├── handlers
+│   │   │   └── main.yml
+│   │   ├── tasks
+│   │   │   ├── main.yml
+│   │   │   └── main_old.yml.bak
+│   │   └── templates
+│   │       ├── internal.j2
+│   │       └── routers_interfaces.j2
+│   ├── router
+│   │   ├── handlers
+│   │   │   └── main.yml
+│   │   ├── tasks
+│   │   │   └── main.yml
+│   │   └── templates
+│   │       └── keepalived.conf.j2
+│   └── storage
+│       ├── handlers
+│       │   └── main.yml
+│       └── tasks
+│           └── main.yml
+├── scripts
+├── set_mac_for_vms.sh
+├── setup_router.yml
+├── shutdown_all_vms.sh
+├── site.yml
+├── start_all_vms.sh
+├── user-data.yml
+└── Команды запуска виртуальных.md
+
+34 directories, 56 files

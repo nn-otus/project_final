@@ -1,0 +1,11 @@
+<network>
+  <name>front-net</name>
+  <bridge name='virbr1' stp='on' delay='0'/>
+  <ip address='10.0.10.1' netmask='255.255.255.0'>
+    <dhcp>
+      <range start='10.0.10.10' end='10.0.10.100'/>
+      <host mac='52:54:00:d4:04:de' name='front-1' ip='10.0.10.21'/>
+    </dhcp>
+  </ip>
+</network>
+
